@@ -1,0 +1,129 @@
+datasource db {
+  provider = "postgres" 
+  url      = env("DATABASE_URL") 
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id              Int              @id @default(autoincrement())
+  name            String
+  price           Decimal          @db.Decimal(10, 2)
+  stock           Int
+  category        String
+  createAt       DateTime         @default(now())
+  safetyStock     Int
+  barcode         String?          @unique
+  userId          Int
+  user            User             @relation(fields: [userId], references: [id])
+  stockMovements  StockMovement[]
+  inventories     Inventory[]
+  saleDetails     SaleDetail[]
+  detailReceptions DetailReception[]
+
+  @@map("products")
+}
+
+model Supplier {
+  id         Int        @id @default(autoincrement())
+  email      String     @unique
+  phone      String     @unique
+  address    String
+  receptions Reception[]
+  userId     Int
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@map("suppliers")
+}
+
+model Reception {
+  id              Int              @id @default(autoincrement())
+  receptionDate   DateTime         @default(now())
+  supplierId      Int
+  userId          Int
+  supplier        Supplier         @relation(fields: [supplierId], references: [id])
+  user            User             @relation(fields: [userId], references: [id])
+  detailReceptions DetailReception[]
+
+  @@map("receptions")
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  name        String
+  email       String     @unique
+  password    String
+  role        String
+  products    Product[]
+  suppliers   Supplier[]
+  inventories Inventory[]
+  receptions  Reception[]
+  sales       Sale[]
+  stockMovements StockMovement[]
+
+  @@map("users")
+}
+
+model Inventory {
+  id            Int        @id @default(autoincrement())
+  quantity      Int
+  inventoryDate DateTime   @default(now())
+  remarks       String
+  userId        Int
+  productId     Int
+  user          User       @relation(fields: [userId], references: [id])
+  product       Product    @relation(fields: [productId], references: [id])
+
+  @@map("inventories")
+}
+
+model DetailReception {
+  id          Int        @id @default(autoincrement())
+  quantity    Int
+  price       Decimal    @db.Decimal(10, 2)
+  receptionId Int
+  productId   Int
+  reception   Reception  @relation(fields: [receptionId], references: [id])
+  product     Product    @relation(fields: [productId], references: [id])
+
+  @@map("detail_receptions")
+}
+
+model Sale {
+  id           Int        @id @default(autoincrement())
+  saleDate     DateTime   @default(now())
+  totalAmount  Decimal    @db.Decimal(10, 2)
+  firstName    String?
+  lastName     String?
+  address      String?
+  userId       Int
+  user         User       @relation(fields: [userId], references: [id])
+  saleDetails  SaleDetail[]
+
+  @@map("sales")
+}
+
+model SaleDetail {
+  id         Int        @id @default(autoincrement())
+  quantity   Int
+  price      Decimal    @db.Decimal(10, 2)
+  saleId     Int
+  productId  Int
+  sale       Sale       @relation(fields: [saleId], references: [id])
+  product    Product    @relation(fields: [productId], references: [id])
+
+  @@map("sale_details")
+}
+
+model StockMovement {
+  id        Int        @id @default(autoincrement())
+  quantity  Int
+  productId Int
+  userId    Int
+  product   Product    @relation(fields: [productId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@map("stock_movements")
+}
