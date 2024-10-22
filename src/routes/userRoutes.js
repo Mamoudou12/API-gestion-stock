@@ -1,15 +1,20 @@
-// src/routes/userRoutes.js
 import express from 'express';
-import UserController from '../controllers/userController.js';
+import { 
+  createUser, 
+  getUsers, 
+  getUserById, 
+  updateUser, 
+  deleteUser 
+} from '../controllers/userController.js';
 import { userValidationRules, validateUser } from '../validators/userValidation.js';
 
 const router = express.Router();
 
-// Define routes
-router.post('/users', userValidationRules, validateUser, UserController.createUser);
-router.get('/users', UserController.getUsers);
-router.get('/users/:id', UserController.getUserById);
-router.put('/users/:id', userValidationRules, validateUser, UserController.updateUser);
-router.delete('/users/:id', UserController.deleteUser);
+// Définition des routes utilisateur
+router.get('/users', getUsers);
+router.get('/users/:id', getUserById);
+router.post('/users', userValidationRules, validateUser, createUser);
+router.put('/users/:id', userValidationRules, validateUser, updateUser);
+router.delete('/users/:id', deleteUser);
 
 export default router;

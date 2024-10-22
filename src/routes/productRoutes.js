@@ -1,14 +1,19 @@
 import express from 'express';
-import ProductController from "../controllers/productController.js";
+import { 
+  getAllProducts, 
+  getProductById, 
+  createProduct, 
+  updateProduct, 
+  deleteProduct 
+} from '../controllers/productController.js';
 import { productValidationRules, validateProduct } from '../validators/productValidator.js';
 
 const router = express.Router();
 
-// Define routes
-router.get('/products', ProductController.getAllProducts);
-router.get('/products/:id', ProductController.getProductById);
-router.post('/products', productValidationRules, ProductController.createProduct);
-router.put('/products/:id', productValidationRules, validateProduct, ProductController.updateProduct);
-router.delete('/products/:id', ProductController.deleteProduct);
- 
+router.get('/products', getAllProducts);
+router.get('/products/:id', getProductById);
+router.post('/products', productValidationRules, validateProduct, createProduct);
+router.put('/products/:id', productValidationRules, validateProduct, updateProduct);
+router.delete('/products/:id', deleteProduct);
+
 export default router;

@@ -13,11 +13,11 @@ model Product {
   price           Decimal          @db.Decimal(10, 2)
   stock           Int
   category        String
-  createAt       DateTime         @default(now())
+  createdAt       DateTime         @default(now())
   safetyStock     Int
   barcode         String?          @unique
-  userId          Int
-  user            User             @relation(fields: [userId], references: [id])
+  userId          Int?             // Nullable
+  user            User?            @relation(fields: [userId], references: [id])
   stockMovements  StockMovement[]
   inventories     Inventory[]
   saleDetails     SaleDetail[]
@@ -32,8 +32,8 @@ model Supplier {
   phone      String     @unique
   address    String
   receptions Reception[]
-  userId     Int
-  user       User       @relation(fields: [userId], references: [id])
+  userId     Int?       // Nullable
+  user       User?      @relation(fields: [userId], references: [id])
 
   @@map("suppliers")
 }
@@ -42,9 +42,9 @@ model Reception {
   id              Int              @id @default(autoincrement())
   receptionDate   DateTime         @default(now())
   supplierId      Int
-  userId          Int
+  userId          Int?             // Nullable
   supplier        Supplier         @relation(fields: [supplierId], references: [id])
-  user            User             @relation(fields: [userId], references: [id])
+  user            User?            @relation(fields: [userId], references: [id])
   detailReceptions DetailReception[]
 
   @@map("receptions")
@@ -56,6 +56,7 @@ model User {
   email       String     @unique
   password    String
   role        String
+  status      Boolean    @default(true)
   products    Product[]
   suppliers   Supplier[]
   inventories Inventory[]
@@ -71,9 +72,9 @@ model Inventory {
   quantity      Int
   inventoryDate DateTime   @default(now())
   remarks       String
-  userId        Int
+  userId        Int?       // Nullable
   productId     Int
-  user          User       @relation(fields: [userId], references: [id])
+  user          User?      @relation(fields: [userId], references: [id])
   product       Product    @relation(fields: [productId], references: [id])
 
   @@map("inventories")
@@ -98,8 +99,8 @@ model Sale {
   firstName    String?
   lastName     String?
   address      String?
-  userId       Int
-  user         User       @relation(fields: [userId], references: [id])
+  userId       Int?       // Nullable
+  user         User?      @relation(fields: [userId], references: [id])
   saleDetails  SaleDetail[]
 
   @@map("sales")
@@ -118,12 +119,15 @@ model SaleDetail {
 }
 
 model StockMovement {
-  id        Int        @id @default(autoincrement())
-  quantity  Int
-  productId Int
-  userId    Int
-  product   Product    @relation(fields: [productId], references: [id])
-  user      User       @relation(fields: [userId], references: [id])
+  id          Int        @id @default(autoincrement())
+  type        String
+  quantity    Int
+  movementDate DateTime
+  entity      String
+  productId   Int
+  userId      Int?       // Nullable
+  product     Product    @relation(fields: [productId], references: [id])
+  user        User?      @relation(fields: [userId], references: [id])
 
   @@map("stock_movements")
 }

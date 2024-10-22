@@ -2,7 +2,9 @@ import express from 'express';
 import productRoutes from './src/routes/productRoutes.js';
 import errorHandler from './src/exceptions/errorHandler.js';
 import userRoutes from './src/routes/userRoutes.js'; 
-import authRoutes from './src/routes/authRoutes.js'
+import supplierRoutes from './src/routes/supplierRoutes.js'
+import saleRoutes from './src/routes/saleRoutes.js'
+import receptionRoutes from './src/routes/receptionRoutes.js'
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -12,11 +14,12 @@ dotenv.config();
 app.use(cors());
 app.use(express.json());
 
+
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json()); 
 // Montage des routes
-app.use('/api', productRoutes , userRoutes, authRoutes); 
+app.use('/api', productRoutes , userRoutes, supplierRoutes, saleRoutes, receptionRoutes); 
 
 // Middleware de gestion des erreurs
 app.use(errorHandler);
