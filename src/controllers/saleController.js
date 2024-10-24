@@ -1,10 +1,32 @@
 import prisma from '../config/prisma.js';
 
-// Récupérer toutes les ventes
+// Helper function to check stock
+const checkStock = async (saleDetails) => {
+  for (const detail of saleDetails) {
+    const product = await prisma.product.findUnique({
+      where: { id: detail.productId },
+    });
+    if (!product || product.stock < detail.quantity) {
+      throw new Error(`Insufficient stock for product ${detail.productId}.`);
+    }
+  }
+};
+
+// Helper function to restore stock
+const restoreStock = async (saleDetails) => {
+  for (const detail of saleDetails) {
+    await prisma.product.update({
+      where: { id: detail.productId },
+      data: { stock: { increment: detail.quantity } },
+    });
+  }
+};
+
+// Get all sales
 export const getAllSales = async (req, res) => {
   try {
     const sales = await prisma.sale.findMany({
-      include: { saleDetails: true, user: true },
+      include: { saleDetails: true },
     });
     res.json(sales);
   } catch (error) {
@@ -13,20 +35,17 @@ export const getAllSales = async (req, res) => {
   }
 };
 
-// Récupérer une vente par ID
+// Get sale by ID
 export const getSaleById = async (req, res) => {
   try {
     const { id } = req.params;
-
     const sale = await prisma.sale.findUnique({
       where: { id: parseInt(id) },
-      include: { saleDetails: true, user: true },
+      include: { saleDetails: true },
     });
-
     if (!sale) {
       return res.status(404).json({ message: 'Sale not found.' });
     }
-
     res.json(sale);
   } catch (error) {
     console.error(error);
@@ -34,23 +53,25 @@ export const getSaleById = async (req, res) => {
   }
 };
 
-// Créer une nouvelle vente
+// Create a sale and decrement stock
 export const createSale = async (req, res) => {
   try {
     const { totalAmount, firstName, lastName, address, userId, saleDetails } = req.body;
 
-    // Vérifier si l'utilisateur existe
+    // Check if user exists
     if (userId) {
       const userExists = await prisma.user.findUnique({
         where: { id: parseInt(userId) },
       });
-
       if (!userExists) {
         return res.status(404).json({ message: 'User not found.' });
       }
     }
 
-    // Créer la vente avec les détails associés
+    // Check stock available
+    await checkStock(saleDetails);
+
+    // Create sale with details
     const newSale = await prisma.sale.create({
       data: {
         totalAmount: parseFloat(totalAmount),
@@ -58,38 +79,53 @@ export const createSale = async (req, res) => {
         lastName,
         address,
         user: userId ? { connect: { id: parseInt(userId) } } : undefined,
-        saleDetails: {
-          create: saleDetails, // Les détails sont créés directement
-        },
+        saleDetails: { create: saleDetails },
       },
     });
 
-    res.status(201).json({ 
-      message: 'Sale created successfully.', 
-      sale: newSale 
+    // Decrement stock of sold products
+    for (const detail of saleDetails) {
+      await prisma.product.update({
+        where: { id: detail.productId },
+        data: { stock: { decrement: detail.quantity } },
+      });
+    }
+    
+
+    res.status(201).json({
+      message: 'Sale created successfully.',
+      sale: newSale,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error creating sale.' });
+    res.status(error.message.includes('Insufficient stock') ? 400 : 500).json({ message: error.message });
   }
 };
 
-// Mettre à jour une vente
+// Update sale and adjust stock
 export const updateSale = async (req, res) => {
   try {
     const { id } = req.params;
     const { totalAmount, firstName, lastName, address, userId, saleDetails } = req.body;
 
-    // Vérifier si la vente existe
-    const saleExists = await prisma.sale.findUnique({
+    const existingSale = await prisma.sale.findUnique({
       where: { id: parseInt(id) },
+      include: { saleDetails: true },
     });
 
-    if (!saleExists) {
+    if (!existingSale) {
       return res.status(404).json({ message: 'Sale not found.' });
     }
 
-    // Mettre à jour la vente et les détails
+    // Restore stock of the existing sale
+    await restoreStock(existingSale.saleDetails);
+
+    // Check stock for new quantities
+    if (saleDetails) {
+      await checkStock(saleDetails);
+    }
+
+    // Update sale
     const updatedSale = await prisma.sale.update({
       where: { id: parseInt(id) },
       data: {
@@ -102,6 +138,14 @@ export const updateSale = async (req, res) => {
       },
     });
 
+    // Decrement stock for new quantities
+    for (const detail of saleDetails || []) {
+      await prisma.product.update({
+        where: { id: detail.productId },
+        data: { stock: { decrement: detail.quantity } },
+      });
+    }
+
     res.json({
       message: 'Sale updated successfully.',
       sale: updatedSale,
@@ -112,43 +156,40 @@ export const updateSale = async (req, res) => {
   }
 };
 
-// Supprimer une vente
+// Delete a sale and restore stock
 export const deleteSale = async (req, res) => {
-    try {
-      const { id } = req.params;
-  
-      // Vérifiez d'abord si la vente existe
-      const saleExists = await prisma.sale.findUnique({
-        where: { id: parseInt(id) },
-        include: { saleDetails: true }, // Incluez les détails pour vérifier
-      });
-  
-      if (!saleExists) {
-        return res.status(404).json({ message: 'Sale not found.' });
-      }
-  
-      // Supprimez d'abord les détails de vente
-      await prisma.saleDetail.deleteMany({
-        where: { saleId: parseInt(id) },
-      });
-  
-      // Supprimez ensuite la vente
-      await prisma.sale.delete({
-        where: { id: parseInt(id) },
-      });
-  
-      res.status(200).json({ message: 'Sale deleted successfully.' });
-    } catch (error) {
-      console.error(error);
-  
-      // Gérez les erreurs spécifiques
-      if (error.code === 'P2025') {
-        return res.status(404).json({ message: 'Sale not found.' });
-      } else if (error.code === 'P2003') {
-        return res.status(400).json({ message: 'Foreign key constraint violated.' });
-      } else {
-        res.status(500).json({ message: 'Error deleting sale.', error: error.message });
-      }
+  try {
+    const { id } = req.params;
+
+    // Check if sale exists
+    const saleExists = await prisma.sale.findUnique({
+      where: { id: parseInt(id) },
+      include: { saleDetails: true },
+    });
+
+    if (!saleExists) {
+      return res.status(404).json({ message: 'Sale not found.' });
     }
-  };
-  
+
+    // Restore stock of the products before deletion
+    await restoreStock(saleExists.saleDetails);
+
+    // Delete sale details
+    await prisma.saleDetail.deleteMany({
+      where: { saleId: parseInt(id) },
+    });
+
+    // Delete the sale
+    await prisma.sale.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.status(200).json({ message: 'Sale deleted successfully.' });
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Sale not found.' });
+    }
+    res.status(500).json({ message: 'Error deleting sale.', error: error.message });
+  }
+};

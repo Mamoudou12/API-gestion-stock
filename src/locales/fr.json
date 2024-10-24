@@ -1,0 +1,16 @@
+{
+    "messages": {
+      "stockMovementCreated": "Mouvement de stock créé avec succès.",
+      "stockMovementsRetrieved": "{{count}} mouvement(s) de stock récupéré(s) avec succès.",
+      "stockMovementNotFound": "Mouvement de stock avec l'ID {{id}} introuvable.",
+      "stockMovementRetrieved": "Mouvement de stock avec l'ID {{id}} récupéré avec succès.",
+      "stockMovementUpdated": "Mouvement de stock avec l'ID {{id}} mis à jour avec succès.",
+      "stockMovementDeleted": "Mouvement de stock avec l'ID {{id}} supprimé avec succès.",
+      "errorCreatingStockMovement": "Erreur lors de la création du mouvement de stock.",
+      "errorRetrievingStockMovements": "Erreur lors de la récupération des mouvements de stock.",
+      "errorRetrievingStockMovement": "Erreur lors de la récupération du mouvement de stock.",
+      "errorUpdatingStockMovement": "Erreur lors de la mise à jour du mouvement de stock.",
+      "errorDeletingStockMovement": "Erreur lors de la suppression du mouvement de stock."
+    }
+  }
+  

@@ -11,7 +11,7 @@ model Product {
   id              Int              @id @default(autoincrement())
   name            String
   price           Decimal          @db.Decimal(10, 2)
-  stock           Int
+  stock           Int?             @default(0)
   category        String
   createdAt       DateTime         @default(now())
   safetyStock     Int
@@ -119,15 +119,16 @@ model SaleDetail {
 }
 
 model StockMovement {
-  id          Int        @id @default(autoincrement())
-  type        String
-  quantity    Int
+  id           Int      @id @default(autoincrement())
+  type         String   @db.VarChar(50) @default("default_type") // Ajout de la valeur par défaut
+  quantity     Int
   movementDate DateTime
-  entity      String
-  productId   Int
-  userId      Int?       // Nullable
-  product     Product    @relation(fields: [productId], references: [id])
-  user        User?      @relation(fields: [userId], references: [id])
+  entity       String?
+  productId    Int
+  userId       Int?
+  product      Product  @relation(fields: [productId], references: [id])
+  user         User?    @relation(fields: [userId], references: [id])
 
   @@map("stock_movements")
 }
+

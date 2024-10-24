@@ -1,0 +1,16 @@
+{
+    "messages": {
+      "stockMovementCreated": "تم إنشاء حركة المخزون بنجاح.",
+      "stockMovementsRetrieved": "تم استرجاع {{count}} حركة مخزون بنجاح.",
+      "stockMovementNotFound": "حركة المخزون بالمعرّف {{id}} غير موجودة.",
+      "stockMovementRetrieved": "تم استرجاع حركة المخزون بالمعرّف {{id}} بنجاح.",
+      "stockMovementUpdated": "تم تحديث حركة المخزون بالمعرّف {{id}} بنجاح.",
+      "stockMovementDeleted": "تم حذف حركة المخزون بالمعرّف {{id}} بنجاح.",
+      "errorCreatingStockMovement": "خطأ في إنشاء حركة المخزون.",
+      "errorRetrievingStockMovements": "خطأ في استرجاع حركات المخزون.",
+      "errorRetrievingStockMovement": "خطأ في استرجاع حركة المخزون.",
+      "errorUpdatingStockMovement": "خطأ في تحديث حركة المخزون.",
+      "errorDeletingStockMovement": "خطأ في حذف حركة المخزون."
+    }
+  }
+  

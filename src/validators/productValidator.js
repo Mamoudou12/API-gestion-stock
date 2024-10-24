@@ -17,14 +17,6 @@ export const productValidationRules = [
       return true;
     }),
 
-  body('stock')
-    .isInt({ min: 0 }).withMessage('Stock must be a positive integer.')
-    .custom(value => {
-      if (value > 1000) {
-        throw new Error('Stock cannot exceed 1000 units.');
-      }
-      return true;
-    }),
 
   body('category')
     .isString().withMessage('Category must be a string.')

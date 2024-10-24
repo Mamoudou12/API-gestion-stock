@@ -3,7 +3,7 @@ CREATE TABLE "products" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
-    "stock" INTEGER NOT NULL,
+    "stock" INTEGER,
     "category" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "safetyStock" INTEGER NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE "users" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "role" TEXT NOT NULL,
-    "status" BOOLEAN NOT NULL,
+    "status" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -96,10 +96,8 @@ CREATE TABLE "sale_details" (
 -- CreateTable
 CREATE TABLE "stock_movements" (
     "id" SERIAL NOT NULL,
-    "type" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "movementDate" TIMESTAMP(3) NOT NULL,
-    "entity" TEXT NOT NULL,
     "productId" INTEGER NOT NULL,
     "userId" INTEGER,
 
